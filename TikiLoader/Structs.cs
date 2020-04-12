@@ -25,7 +25,7 @@ namespace TikiLoader
             public IntPtr MoreReserved;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct STARTUPINFO
         {
             public uint cb;
@@ -48,7 +48,7 @@ namespace TikiLoader
             public IntPtr hStdErr;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct STARTUPINFOEX
         {
             public STARTUPINFO StartupInfo;
@@ -63,6 +63,7 @@ namespace TikiLoader
             public int bInheritHandle;
         }
 
+        
         [StructLayout(LayoutKind.Sequential)]
         public struct SYSTEM_INFO
         {

